@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f5f5f7">
+  <title>成长雷达 · iPhone 预览</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <div class="device" aria-label="成长雷达 iPhone 预览">
+    <main id="app">
+      <section id="today-panel" class="panel is-active" aria-label="今天">
+        <header class="page-header">
+          <p class="app-name">成长雷达</p>
+          <h1>今天</h1>
+          <p class="stage-meta">阶段 1 · 9 月 20 日开始</p>
+        </header>
+
+        <div class="metric-switch" role="group" aria-label="雷达图统计范围">
+          <button class="metric-button is-selected" data-mode="recent" aria-pressed="true">近 7 日</button>
+          <button class="metric-button" data-mode="stage" aria-pressed="false">本阶段</button>
+        </div>
+
+        <section class="radar-section" aria-labelledby="radar-title">
+          <div class="radar-heading">
+            <p id="radar-title">近 7 日持续性</p>
+            <p id="radar-description">按活跃天数统计</p>
+          </div>
+          <svg id="radar-svg" viewBox="0 0 360 280" role="img" aria-label="六个成长方向的活跃度雷达图"></svg>
+        </section>
+
+        <section class="direction-section" aria-labelledby="directions-title">
+          <div class="section-heading">
+            <h2 id="directions-title">方向</h2>
+            <span>轻点即可记录</span>
+          </div>
+          <div class="grouped-list">
+            <div id="dimension-list"></div>
+            <button id="add-dimension-button" class="add-direction-row" aria-label="添加成长方向">
+              <span class="add-icon" aria-hidden="true"><img src="assets/icons/plus.svg" alt=""></span>
+              <span>添加方向</span>
+              <img class="chevron" src="assets/icons/chevron-right.svg" alt="" aria-hidden="true">
+            </button>
+          </div>
+        </section>
+      </section>
+
+      <section id="history-panel" class="panel secondary-panel" aria-label="历史">
+        <header class="page-header compact"><p class="app-name">成长雷达</p><h1>历史</h1><p class="stage-meta">回看每一阶段的真实投入</p></header>
+        <div class="history-list grouped-list">
+          <button class="stage-row"><span class="stage-dot"></span><span class="stage-copy"><strong>阶段 1</strong><small>9 月 20 日 ～ 至今</small></span><span class="stage-status">进行中</span><img class="chevron" src="assets/icons/chevron-right.svg" alt=""></button>
+          <button class="stage-row"><span class="stage-dot muted-dot"></span><span class="stage-copy"><strong>阶段 0</strong><small>8 月 10 日 ～ 9 月 19 日</small></span><img class="chevron" src="assets/icons/chevron-right.svg" alt=""></button>
+        </div>
+        <section class="summary-card"><p class="summary-label">上一阶段</p><h2>行动留在当时的结构里</h2><p>阅读 18 次 · 技术 12 次 · 健身 9 次</p></section>
+      </section>
+
+      <section id="settings-panel" class="panel secondary-panel" aria-label="设置">
+        <header class="page-header compact"><p class="app-name">成长雷达</p><h1>设置</h1><p class="stage-meta">调整当前阶段与方向</p></header>
+        <p class="group-label">当前阶段</p>
+        <div class="settings-group grouped-list">
+          <button class="setting-row"><span>阶段 1</span><img class="chevron" src="assets/icons/chevron-right.svg" alt=""></button>
+          <button class="setting-row"><span>方向管理</span><span class="setting-value">6 个方向</span><img class="chevron" src="assets/icons/chevron-right.svg" alt=""></button>
+        </div>
+        <p class="group-label">阶段管理</p>
+        <div class="settings-group grouped-list"><button class="setting-row danger"><span>结束本阶段</span><img class="chevron" src="assets/icons/chevron-right.svg" alt=""></button></div>
+        <p class="settings-footnote">归档后，历史方向与记录保持只读，不受新阶段修改影响。</p>
+      </section>
+    </main>
+
+    <div id="undo-toast" class="undo-toast" role="status" aria-live="polite">
+      <span id="toast-message">已记录</span><button id="undo-button">撤销</button>
+    </div>
+
+    <nav class="tab-bar" aria-label="主导航">
+      <button class="tab-button is-selected" data-tab="today" aria-label="今天" aria-current="page"><img src="assets/icons/chart-bar.svg" alt=""><span>今天</span></button>
+      <button class="tab-button" data-tab="history" aria-label="历史"><img src="assets/icons/history.svg" alt=""><span>历史</span></button>
+      <button class="tab-button" data-tab="settings" aria-label="设置"><img src="assets/icons/settings.svg" alt=""><span>设置</span></button>
+    </nav>
+  </div>
+</body>
+</html>
