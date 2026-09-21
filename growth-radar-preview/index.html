@@ -6,6 +6,11 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'none'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'">
   <meta name="theme-color" content="#f5f5f7">
   <meta name="referrer" content="no-referrer">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="成长雷达">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
   <title>成长雷达</title>
   <script type="module" src="/src/main.js"></script>
 </head>
@@ -64,6 +69,8 @@
         <p class="group-label">阶段管理</p>
         <div class="settings-group grouped-list"><button class="setting-row danger"><span>结束本阶段</span><img class="chevron" src="assets/icons/chevron-right.svg" alt=""></button></div>
         <p class="settings-footnote">归档后，历史方向与记录保持只读，不受新阶段修改影响。</p>
+        <p class="group-label install-label">安装到 iPhone</p>
+        <div class="install-card grouped-list"><p>在 Safari 点“分享”，选择“添加到主屏幕”。安装后可全屏打开，离线记录。</p></div>
         <p class="group-label backup-label">加密备份</p>
         <div class="backup-card grouped-list">
           <label class="backup-field"><span>备份密码</span><input id="backup-password" type="password" minlength="10" maxlength="128" autocomplete="new-password" placeholder="至少 10 个字符"></label>

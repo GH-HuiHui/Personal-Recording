@@ -116,6 +116,8 @@ h1 { font-size: clamp(38px, 10vw, 46px); line-height: 1.08; letter-spacing: -.04
 .setting-row .chevron { margin-left: 8px; }
 .setting-row.danger { color: var(--danger); }
 .settings-footnote { padding: 0 2px; }
+.install-label { margin-top: 28px; }
+.install-card { padding: 16px; color: var(--secondary); font-size: 13px; line-height: 1.55; }
 .backup-label { margin-top: 28px; }
 .backup-card { padding: 16px; }
 .backup-field { display: grid; gap: 8px; color: var(--secondary); font-size: 13px; }

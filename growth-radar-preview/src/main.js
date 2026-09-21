@@ -182,6 +182,16 @@ async function initialize() {
   }
 }
 
+async function registerServiceWorker() {
+  if (!import.meta.env.PROD || !('serviceWorker' in navigator)) return;
+  try {
+    const url = new URL('service-worker.js', document.baseURI);
+    await navigator.serviceWorker.register(url, { scope: './' });
+  } catch {
+    console.warn('PWA_SW_REGISTRATION_FAILED');
+  }
+}
+
 document.querySelectorAll('.metric-button').forEach((button) => button.addEventListener('click', () => setMode(button.dataset.mode)));
 document.querySelectorAll('.tab-button').forEach((button) => button.addEventListener('click', () => setTab(button.dataset.tab)));
 document.querySelector('#undo-button').addEventListener('click', undoLastAction);
@@ -190,5 +200,6 @@ document.querySelector('#export-backup').addEventListener('click', exportEncrypt
 document.querySelector('#import-backup').addEventListener('change', (event) => importEncryptedBackup(event.target.files?.[0]));
 
 void initialize();
+void registerServiceWorker();
 
 export { framework };
