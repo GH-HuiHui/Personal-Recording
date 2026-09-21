@@ -10,6 +10,7 @@
   --danger: #ff3b30;
 }
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 html { background: #e8e8ed; }
 body {
   margin: 0;
@@ -115,6 +116,16 @@ h1 { font-size: clamp(38px, 10vw, 46px); line-height: 1.08; letter-spacing: -.04
 .setting-row .chevron { margin-left: 8px; }
 .setting-row.danger { color: var(--danger); }
 .settings-footnote { padding: 0 2px; }
+.storage-error, .empty-state {
+  margin: 18px 0;
+  padding: 16px;
+  border-radius: 14px;
+  background: rgba(255,59,48,.1);
+  color: #b42318;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.empty-state { background: var(--surface); color: var(--secondary); }
 .undo-toast {
   position: absolute;
   z-index: 3;

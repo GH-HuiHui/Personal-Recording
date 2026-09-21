@@ -16,9 +16,11 @@
         <header class="page-header">
           <p class="app-name">成长雷达</p>
           <h1>今天</h1>
-          <p class="stage-meta">阶段 1 · 9 月 20 日开始</p>
+          <p id="stage-meta" class="stage-meta">正在读取本地数据…</p>
         </header>
 
+        <p id="storage-error" class="storage-error" role="alert" hidden>无法使用本地数据库。为防止记录丢失，应用已停止写入；请检查 Safari 的隐私或存储设置。</p>
+        <div id="today-content">
         <div class="metric-switch" role="group" aria-label="雷达图统计范围">
           <button class="metric-button is-selected" data-mode="recent" aria-pressed="true">近 7 日</button>
           <button class="metric-button" data-mode="stage" aria-pressed="false">本阶段</button>
@@ -46,24 +48,19 @@
             </button>
           </div>
         </section>
+        </div>
       </section>
 
       <section id="history-panel" class="panel secondary-panel" aria-label="历史">
         <header class="page-header compact"><p class="app-name">成长雷达</p><h1>历史</h1><p class="stage-meta">回看每一阶段的真实投入</p></header>
-        <div class="history-list grouped-list">
-          <button class="stage-row"><span class="stage-dot"></span><span class="stage-copy"><strong>阶段 1</strong><small>9 月 20 日 ～ 至今</small></span><span class="stage-status">进行中</span><img class="chevron" src="assets/icons/chevron-right.svg" alt=""></button>
-          <button class="stage-row"><span class="stage-dot muted-dot"></span><span class="stage-copy"><strong>阶段 0</strong><small>8 月 10 日 ～ 9 月 19 日</small></span><img class="chevron" src="assets/icons/chevron-right.svg" alt=""></button>
-        </div>
-        <section class="summary-card"><p class="summary-label">上一阶段</p><h2>行动留在当时的结构里</h2><p>阅读 18 次 · 技术 12 次 · 健身 9 次</p></section>
+        <div id="history-list" class="history-list grouped-list"></div>
+        <section class="summary-card"><p class="summary-label">隐私设计</p><h2>记录只留在这台设备</h2><p>网页不连接账号或服务器。请定期在设置中导出加密备份。</p></section>
       </section>
 
       <section id="settings-panel" class="panel secondary-panel" aria-label="设置">
         <header class="page-header compact"><p class="app-name">成长雷达</p><h1>设置</h1><p class="stage-meta">调整当前阶段与方向</p></header>
         <p class="group-label">当前阶段</p>
-        <div class="settings-group grouped-list">
-          <button class="setting-row"><span>阶段 1</span><img class="chevron" src="assets/icons/chevron-right.svg" alt=""></button>
-          <button class="setting-row"><span>方向管理</span><span class="setting-value">6 个方向</span><img class="chevron" src="assets/icons/chevron-right.svg" alt=""></button>
-        </div>
+        <div id="settings-current" class="settings-group grouped-list"></div>
         <p class="group-label">阶段管理</p>
         <div class="settings-group grouped-list"><button class="setting-row danger"><span>结束本阶段</span><img class="chevron" src="assets/icons/chevron-right.svg" alt=""></button></div>
         <p class="settings-footnote">归档后，历史方向与记录保持只读，不受新阶段修改影响。</p>
