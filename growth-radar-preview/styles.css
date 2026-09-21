@@ -116,6 +116,22 @@ h1 { font-size: clamp(38px, 10vw, 46px); line-height: 1.08; letter-spacing: -.04
 .setting-row .chevron { margin-left: 8px; }
 .setting-row.danger { color: var(--danger); }
 .settings-footnote { padding: 0 2px; }
+.backup-label { margin-top: 28px; }
+.backup-card { padding: 16px; }
+.backup-field { display: grid; gap: 8px; color: var(--secondary); font-size: 13px; }
+.backup-field input {
+  width: 100%; min-height: 46px; padding: 0 13px; border: .5px solid var(--separator); border-radius: 11px;
+  background: rgba(118,118,128,.08); color: var(--label); font: inherit; font-size: 16px;
+}
+.backup-field input:focus { outline: 3px solid rgba(0,122,255,.24); border-color: var(--accent); }
+.backup-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+.backup-button {
+  display: grid; place-items: center; min-height: 44px; padding: 0 10px; border-radius: 11px;
+  background: var(--accent); color: #fff; font-size: 14px; font-weight: 650; text-align: center;
+}
+.secondary-backup { background: rgba(0,122,255,.1); color: var(--accent); }
+.backup-status { margin-top: 12px; color: var(--secondary); font-size: 12px; line-height: 1.5; }
+.backup-status.is-error { color: var(--danger); }
 .storage-error, .empty-state {
   margin: 18px 0;
   padding: 16px;

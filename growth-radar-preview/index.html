@@ -64,6 +64,15 @@
         <p class="group-label">阶段管理</p>
         <div class="settings-group grouped-list"><button class="setting-row danger"><span>结束本阶段</span><img class="chevron" src="assets/icons/chevron-right.svg" alt=""></button></div>
         <p class="settings-footnote">归档后，历史方向与记录保持只读，不受新阶段修改影响。</p>
+        <p class="group-label backup-label">加密备份</p>
+        <div class="backup-card grouped-list">
+          <label class="backup-field"><span>备份密码</span><input id="backup-password" type="password" minlength="10" maxlength="128" autocomplete="new-password" placeholder="至少 10 个字符"></label>
+          <div class="backup-actions">
+            <button id="export-backup" class="backup-button" type="button">导出加密备份</button>
+            <label class="backup-button secondary-backup">导入备份<input id="import-backup" type="file" accept="application/json,.growthradar" hidden></label>
+          </div>
+          <p id="backup-status" class="backup-status" role="status" aria-live="polite">密码不会保存或上传。忘记密码将无法恢复备份。</p>
+        </div>
       </section>
     </main>
 

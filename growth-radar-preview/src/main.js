@@ -1,7 +1,8 @@
 import Framework7 from 'framework7';
 import 'framework7/css';
 import '../styles.css';
-import { addRecord, deleteRecord, loadSnapshot, openGrowthRadarDb, seedIfEmpty } from './data/db.js';
+import { decryptBackup, encryptBackup } from './data/backup.js';
+import { addRecord, deleteRecord, loadSnapshot, openGrowthRadarDb, replaceDatabase, seedIfEmpty } from './data/db.js';
 import { calculateDimensionStats } from './domain/analytics.js';
 import { renderHistory } from './ui/history.js';
 import { renderRadar } from './ui/radar.js';
@@ -116,6 +117,60 @@ function setTab(tab) {
   elements.app.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+function setBackupStatus(message, isError = false) {
+  const status = document.querySelector('#backup-status');
+  status.textContent = message;
+  status.classList.toggle('is-error', isError);
+}
+
+function readBackupPassword() {
+  const password = document.querySelector('#backup-password').value;
+  if (password.length < 10) throw new Error('备份密码至少需要 10 个字符');
+  return password;
+}
+
+async function exportEncryptedBackup() {
+  try {
+    const password = readBackupPassword();
+    const encrypted = await encryptBackup(snapshot, password);
+    const url = URL.createObjectURL(new Blob([encrypted], { type: 'application/json' }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `成长雷达备份-${new Date().toISOString().slice(0, 10)}.growthradar`;
+    link.click();
+    URL.revokeObjectURL(url);
+    document.querySelector('#backup-password').value = '';
+    setBackupStatus('加密备份已生成，请将文件保存在安全位置。');
+  } catch (error) {
+    setBackupStatus(error.message || '导出失败', true);
+  }
+}
+
+async function importEncryptedBackup(file) {
+  if (!file) return;
+  if (file.size > 5_000_000) {
+    setBackupStatus('备份文件超过 5 MB，已拒绝读取。', true);
+    return;
+  }
+  try {
+    const password = readBackupPassword();
+    const restored = await decryptBackup(await file.text(), password);
+    const approved = window.confirm('导入会覆盖本机现有记录。确认继续吗？');
+    if (!approved) {
+      setBackupStatus('已取消导入，现有数据未改变。');
+      return;
+    }
+    await replaceDatabase(database, restored);
+    document.querySelector('#backup-password').value = '';
+    await refresh();
+    setBackupStatus('备份已安全恢复。');
+  } catch (error) {
+    setBackupStatus(error.message || '导入失败，现有数据未改变。', true);
+  } finally {
+    document.querySelector('#import-backup').value = '';
+  }
+}
+
 async function initialize() {
   try {
     database = await openGrowthRadarDb();
@@ -131,6 +186,8 @@ document.querySelectorAll('.metric-button').forEach((button) => button.addEventL
 document.querySelectorAll('.tab-button').forEach((button) => button.addEventListener('click', () => setTab(button.dataset.tab)));
 document.querySelector('#undo-button').addEventListener('click', undoLastAction);
 document.querySelector('#add-dimension-button').addEventListener('click', () => showToast('方向管理将在下一阶段开放'));
+document.querySelector('#export-backup').addEventListener('click', exportEncryptedBackup);
+document.querySelector('#import-backup').addEventListener('change', (event) => importEncryptedBackup(event.target.files?.[0]));
 
 void initialize();
 

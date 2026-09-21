@@ -97,3 +97,12 @@ export async function clearDatabase(db) {
   STORE_NAMES.forEach((name) => transaction.objectStore(name).clear());
   await transactionDone(transaction);
 }
+
+export async function replaceDatabase(db, snapshot) {
+  const transaction = db.transaction(STORE_NAMES, 'readwrite');
+  STORE_NAMES.forEach((name) => transaction.objectStore(name).clear());
+  snapshot.stages.forEach((stage) => transaction.objectStore('stages').add(stage));
+  snapshot.dimensions.forEach((dimension) => transaction.objectStore('dimensions').add(dimension));
+  snapshot.records.forEach((record) => transaction.objectStore('records').add(record));
+  await transactionDone(transaction);
+}
