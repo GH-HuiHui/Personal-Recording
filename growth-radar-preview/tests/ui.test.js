@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { createRadarMarkup } from '../src/ui/radar.js';
 import { escapeHtml } from '../src/ui/safe-html.js';
 import { createDimensionRows } from '../src/ui/today.js';
+import { interpolatePoints } from '../src/ui/radar-motion.js';
 
 const stats = [
   { id: 'a', name: '阅读', icon: 'book-2', todayCount: 1, recentCount: 3, activeDays: 2, stageRate: 0.5 },
@@ -10,6 +11,11 @@ const stats = [
 ];
 
 describe('安全 UI 渲染', () => {
+  it('图表插值保留端点，方向数量变化时不产生无效坐标', () => {
+    expect(interpolatePoints('0,0 10,10', '10,10 20,20', 0.5)).toBe('5,5 15,15');
+    expect(interpolatePoints('0,0 10,10', '10,10 20,20', 1)).toBe('10,10 20,20');
+    expect(interpolatePoints('0,0', '10,10 20,20', 0.5)).toBe('10,10 20,20');
+  });
   it('转义可变文本，避免导入数据注入 HTML', () => {
     expect(escapeHtml('<img src=x onerror=alert(1)>')).toBe('&lt;img src=x onerror=alert(1)&gt;');
     const rows = createDimensionRows([{ ...stats[0], name: '<script>alert(1)</script>' }]);
@@ -26,7 +32,8 @@ describe('安全 UI 渲染', () => {
   });
 
   it('雷达图支持近期与阶段两种统计', () => {
-    expect(createRadarMarkup(stats, 'recent')).toContain('>7</text>');
-    expect(createRadarMarkup(stats, 'stage')).toContain('>100</text>');
+    expect(createRadarMarkup(stats, 'recent')).toContain('活跃天数 · 0–7 天');
+    expect(createRadarMarkup(stats, 'stage')).toContain('阶段活跃率 · 0–100%');
+    expect(createRadarMarkup(stats, 'recent')).not.toContain('scale-label');
   });
 });

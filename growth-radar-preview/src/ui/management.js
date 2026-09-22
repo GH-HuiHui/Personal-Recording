@@ -1,26 +1,58 @@
 import { addDimension, archiveAndCreateStage, editDimension, renameStage } from '../data/stages.js';
 import { escapeHtml as e } from './safe-html.js';
 
-export function setupManagement({ getDb, getSnapshot, refresh, notify }) {
-  const dialog = document.createElement('dialog');
-  dialog.className = 'management-dialog';
-  document.querySelector('#growth-radar-app').append(dialog);
+export function setupManagement({ framework, getDb, getSnapshot, refresh, notify }) {
+  const modal = document.createElement('div');
+  modal.className = 'sheet-modal health-sheet';
+  modal.setAttribute('role', 'dialog');
+  modal.setAttribute('aria-modal', 'true');
+  modal.setAttribute('aria-labelledby', 'sheet-heading');
+  modal.innerHTML = '<div class="sheet-modal-inner management-dialog"></div>';
+  const dialog = modal.firstElementChild;
+  document.querySelector('#growth-radar-app').append(modal);
+  let trigger;
+  let triggerSelector;
+  const background = [document.querySelector('#app'), document.querySelector('.tab-bar')];
+  const sheet = framework.sheet.create({ el: modal, backdrop: true, closeOnEscape: true,
+    on: {
+      open: () => background.forEach((element) => { element.inert = true; }),
+      opened: () => dialog.querySelector('input, button')?.focus(),
+      closed: () => {
+        background.forEach((element) => { element.inert = false; });
+        const target = trigger?.isConnected ? trigger : triggerSelector ? document.querySelector(triggerSelector) : null;
+        target?.focus();
+      }
+    }
+  });
+  const close = () => sheet.close(!window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  modal.addEventListener('keydown', (event) => {
+    if (event.key !== 'Tab') return;
+    const controls = [...dialog.querySelectorAll('input:not(:disabled), button:not(:disabled)')];
+    const first = controls[0]; const last = controls.at(-1);
+    if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+    else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+  });
   const active = () => getSnapshot().stages.find((item) => item.status === 'active');
   const directions = () => getSnapshot().dimensions.filter((item) => item.stageId === active()?.id).toSorted((a,b) => a.sortOrder - b.sortOrder);
 
   function show(title, content, action) {
-    dialog.innerHTML = `<form><h2>${e(title)}</h2>${content}<p class="dialog-error" role="alert"></p><div class="dialog-actions"><button type="button" data-close>取消</button>${action ? '<button type="submit">保存</button>' : ''}</div></form>`;
-    dialog.querySelector('[data-close]').onclick = () => dialog.close();
+    if (!sheet.opened) {
+      trigger = document.activeElement;
+      triggerSelector = trigger?.hasAttribute('data-rename') ? '[data-rename]' : trigger?.hasAttribute('data-manage') ? '[data-manage]' : null;
+    }
+    dialog.innerHTML = `<form><div class="sheet-toolbar"><button type="button" data-close>${action ? '取消' : '完成'}</button><h2 id="sheet-heading">${e(title)}</h2>${action ? '<button type="submit">保存</button>' : '<span></span>'}</div><div class="sheet-fields">${content}<p class="dialog-error" role="alert"></p></div></form>`;
+    dialog.querySelector('[data-close]').onclick = close;
     dialog.querySelector('form').onsubmit = async (event) => {
       event.preventDefault();
       if (!action) return;
       const button = dialog.querySelector('[type=submit]');
       button.disabled = true;
-      try { await action(new FormData(event.target)); await refresh(); dialog.close(); notify('已保存'); }
+      try { await action(new FormData(event.target)); await refresh(); close(); notify('已保存'); }
       catch (error) { dialog.querySelector('.dialog-error').textContent = error.message; }
       finally { button.disabled = false; }
     };
-    if (!dialog.open) dialog.showModal();
+    if (!sheet.opened) sheet.open(!window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    else dialog.querySelector('input, button')?.focus();
   }
   const nameInput = (value) => `<label>名称<input name="name" required maxlength="24" value="${e(value)}"></label>`;
   function add() { show('添加方向', nameInput(''), (data) => addDimension(getDb(), data.get('name'))); }

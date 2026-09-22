@@ -1,6 +1,13 @@
 import Framework7 from 'framework7';
+import Sheet from 'framework7/components/sheet';
+import Toast from 'framework7/components/toast';
+import Actions from 'framework7/components/actions';
 import 'framework7/css';
+import 'framework7/components/sheet/css';
+import 'framework7/components/toast/css';
+import 'framework7/components/actions/css';
 import '../styles.css';
+import './ui/health-theme.css';
 import { decryptBackup, encryptBackup } from './data/backup.js';
 import { addRecord, deleteRecord, loadSnapshot, openGrowthRadarDb, replaceDatabase, seedIfEmpty } from './data/db.js';
 import { calculateDimensionStats } from './domain/analytics.js';
@@ -9,13 +16,16 @@ import { renderRadar } from './ui/radar.js';
 import { renderSettings } from './ui/settings.js';
 import { renderToday } from './ui/today.js';
 import { setupManagement } from './ui/management.js';
+import { createFeedback, confirmRestore } from './ui/feedback.js';
 
+Framework7.use([Sheet, Toast, Actions]);
 const framework = new Framework7({
   el: '#growth-radar-app',
   theme: 'ios',
   name: '成长雷达',
   id: 'local.growthradar.pwa'
 });
+const feedback = createFeedback(framework);
 
 const elements = {
   app: document.querySelector('#app'),
@@ -25,9 +35,7 @@ const elements = {
   radar: document.querySelector('#radar-svg'),
   radarTitle: document.querySelector('#radar-title'),
   radarDescription: document.querySelector('#radar-description'),
-  stageMeta: document.querySelector('#stage-meta'),
-  toast: document.querySelector('#undo-toast'),
-  toastMessage: document.querySelector('#toast-message')
+  stageMeta: document.querySelector('#stage-meta')
 };
 
 let database;
@@ -36,7 +44,6 @@ let stats = [];
 let mode = 'recent';
 let lastRecord = null;
 let recordedId = null;
-let undoTimer = null;
 let backupObjectUrl = null;
 
 function activeStage() {
@@ -50,18 +57,14 @@ function formatStageMeta(stage) {
 }
 
 function showToast(message, canUndo = false) {
-  window.clearTimeout(undoTimer);
-  elements.toastMessage.textContent = message;
-  elements.toast.classList.toggle('is-info', !canUndo);
-  elements.toast.classList.add('is-visible');
-  undoTimer = window.setTimeout(() => elements.toast.classList.remove('is-visible'), 3000);
+  feedback.show(message, canUndo ? undoLastAction : undefined);
 }
 
 function render() {
   stats = calculateDimensionStats({ ...snapshot, dimensions: snapshot.dimensions.filter((item) => item.stageId === activeStage()?.id) });
   elements.stageMeta.textContent = formatStageMeta(activeStage());
-  elements.radarTitle.textContent = mode === 'recent' ? '近 7 日持续性' : '本阶段活跃率';
-  elements.radarDescription.textContent = mode === 'recent' ? '按活跃天数统计' : '活跃天数占比';
+  elements.radarTitle.textContent = mode === 'recent' ? '活跃天数 · 0–7 天' : '阶段活跃率 · 0–100%';
+  elements.radarDescription.textContent = stats.some((item) => item.stageCount > 0) ? '每一次投入，都有迹可循' : '从今天的一次记录开始';
   renderRadar(elements.radar, stats, mode);
   renderToday(elements.dimensionList, stats, { recordedId, onRecord: recordAction });
   renderHistory(elements.historyList, snapshot);
@@ -92,7 +95,7 @@ async function undoLastAction() {
   try {
     await deleteRecord(database, lastRecord.id);
     lastRecord = null;
-    elements.toast.classList.remove('is-visible');
+    feedback.dismiss();
     await refresh();
   } catch {
     showToast('撤销失败，请稍后再试');
@@ -157,7 +160,7 @@ async function importEncryptedBackup(file) {
   try {
     const password = readBackupPassword();
     const restored = await decryptBackup(await file.text(), password);
-    const approved = window.confirm('导入会覆盖本机现有记录。确认继续吗？');
+    const approved = await confirmRestore(framework);
     if (!approved) {
       setBackupStatus('已取消导入，现有数据未改变。');
       return;
@@ -179,7 +182,7 @@ async function initialize() {
     database = await openGrowthRadarDb();
     await seedIfEmpty(database);
     await refresh();
-    setupManagement({ getDb: () => database, getSnapshot: () => snapshot, refresh: async () => { lastRecord = null; await refresh(); }, notify: showToast });
+    setupManagement({ framework, getDb: () => database, getSnapshot: () => snapshot, refresh: async () => { lastRecord = null; await refresh(); }, notify: showToast });
   } catch {
     document.querySelector('#storage-error').hidden = false;
     document.querySelector('#today-content').hidden = true;
@@ -199,7 +202,6 @@ async function registerServiceWorker() {
 
 document.querySelectorAll('.metric-button').forEach((button) => button.addEventListener('click', () => setMode(button.dataset.mode)));
 document.querySelectorAll('.tab-button').forEach((button) => button.addEventListener('click', () => setTab(button.dataset.tab)));
-document.querySelector('#undo-button').addEventListener('click', undoLastAction);
 document.querySelector('#export-backup').addEventListener('click', exportEncryptedBackup);
 document.querySelector('#import-backup').addEventListener('change', (event) => importEncryptedBackup(event.target.files?.[0]));
 
