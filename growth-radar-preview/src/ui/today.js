@@ -1,5 +1,11 @@
 import { escapeHtml } from './safe-html.js';
 
+export function todaySummary(dimensions) {
+  const count = dimensions.reduce((sum, item) => sum + item.todayCount, 0);
+  const active = dimensions.filter((item) => item.todayCount > 0).length;
+  return count ? `今日已记录 ${count} 次 · ${active} 个方向` : '今天还没有记录，轻点下方 + 开始';
+}
+
 export function createDimensionRows(dimensions, recordedId = null) {
   return dimensions.map((item) => `
     <article class="dimension-row">

@@ -14,7 +14,7 @@ import { calculateDimensionStats } from './domain/analytics.js';
 import { renderHistory } from './ui/history.js';
 import { renderRadar } from './ui/radar.js';
 import { renderSettings } from './ui/settings.js';
-import { renderToday } from './ui/today.js';
+import { renderToday, todaySummary } from './ui/today.js';
 import { setupManagement } from './ui/management.js';
 import { createFeedback, confirmRestore } from './ui/feedback.js';
 
@@ -63,6 +63,7 @@ function showToast(message, canUndo = false) {
 function render() {
   stats = calculateDimensionStats({ ...snapshot, dimensions: snapshot.dimensions.filter((item) => item.stageId === activeStage()?.id) });
   elements.stageMeta.textContent = formatStageMeta(activeStage());
+  document.querySelector('#today-summary').textContent = todaySummary(stats);
   elements.radarTitle.textContent = mode === 'recent' ? '活跃天数 · 0–7 天' : '阶段活跃率 · 0–100%';
   elements.radarDescription.textContent = stats.some((item) => item.stageCount > 0) ? '每一次投入，都有迹可循' : '从今天的一次记录开始';
   renderRadar(elements.radar, stats, mode);
@@ -182,7 +183,7 @@ async function initialize() {
     database = await openGrowthRadarDb();
     await seedIfEmpty(database);
     await refresh();
-    setupManagement({ framework, getDb: () => database, getSnapshot: () => snapshot, refresh: async () => { lastRecord = null; await refresh(); }, notify: showToast });
+    setupManagement({ framework, getDb: () => database, getSnapshot: () => snapshot, refresh: async () => { lastRecord = null; await refresh(); }, notify: showToast, dismissFeedback: feedback.dismiss });
   } catch {
     document.querySelector('#storage-error').hidden = false;
     document.querySelector('#today-content').hidden = true;
