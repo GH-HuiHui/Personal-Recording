@@ -35,4 +35,15 @@ No actionable P0, P1, or P2 differences remain.
 
 - P3: the reference places Add Direction in the first viewport because it displays only three directions. This prototype retains the product's six default directions, so Add Direction remains available after a short scroll.
 
-final result: passed
+## 2026-09-22 production follow-up
+
+- 393 × 852 browser viewport: grouped list, readable labels and pinned navigation visually checked.
+- Production dynamic icons are now emitted and explicitly precached; no runtime CDN.
+- Add direction → record → archive → new stage zero counts → historical one-record detail verified through UI.
+- Encrypted backup generation exposes the save-file link; real iPhone file saving/import UI still requires device acceptance.
+- Preview server stopped: cached reload and recording persisted after reload, without console errors.
+- Automated suite covers database, stage transactions, statistics, escaping, encrypted backup and PWA safeguards; dependency audit and production build passed.
+- Earlier screenshots above document the original visual pass, not the current management dialogs.
+- Not verified: real iPhone Safari installation, storage eviction, GitHub deployment, external penetration audit. No absolute security guarantee.
+
+Local acceptance passed within these boundaries; deployment and device acceptance remain pending.

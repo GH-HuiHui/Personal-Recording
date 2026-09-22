@@ -14,7 +14,7 @@
   },
   "devDependencies": {
     "fake-indexeddb": "6.2.5",
-    "vite": "7.1.7",
-    "vitest": "3.2.4"
+    "vite": "7.3.6",
+    "vitest": "4.1.11"
   }
 }

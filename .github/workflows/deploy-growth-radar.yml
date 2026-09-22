@@ -10,8 +10,6 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
   group: pages
@@ -20,6 +18,8 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      TZ: Asia/Shanghai
     defaults:
       run:
         working-directory: growth-radar-preview
@@ -36,6 +36,8 @@ jobs:
         run: npm ci --ignore-scripts
       - name: 运行测试
         run: npm test -- --run
+      - name: 检查高风险依赖
+        run: npm audit --audit-level=high --registry=https://registry.npmjs.org
       - name: 构建静态站点
         run: npm run build
       - name: 配置 Pages
@@ -46,6 +48,9 @@ jobs:
           path: growth-radar-preview/dist
 
   deploy:
+    permissions:
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

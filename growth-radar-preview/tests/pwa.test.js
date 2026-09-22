@@ -13,10 +13,13 @@ describe('PWA 安装与离线边界', () => {
   });
 
   it('Service Worker 仅缓存同源静态 GET 请求', async () => {
-    const worker = await readFile(new URL('public/service-worker.js', root), 'utf8');
+    const worker = await readFile(new URL('src/service-worker.template.js', root), 'utf8');
+    const config = await readFile(new URL('vite.config.js', root), 'utf8');
     expect(worker).toContain("request.method !== 'GET'");
     expect(worker).toContain('url.origin !== self.location.origin');
     expect(worker).not.toMatch(/indexedDB|growth-radar-backup|records/);
+    expect(config).toContain("fileName: 'service-worker.js'");
+    expect(config).toContain('Object.keys(bundle)');
   });
 
   it('应用源码没有业务网络接口', async () => {

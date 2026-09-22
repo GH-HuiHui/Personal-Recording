@@ -4,6 +4,7 @@ const ITERATIONS = 600_000;
 const MAX_STAGES = 100;
 const MAX_DIMENSIONS = 800;
 const MAX_RECORDS = 500_000;
+const ICONS = new Set(['book-2', 'language', 'code', 'barbell', 'pencil', 'microphone-2']);
 const encoder = new TextEncoder();
 const decoder = new TextDecoder('utf-8', { fatal: true });
 
@@ -54,14 +55,16 @@ export function normalizeSnapshot(snapshot) {
   }));
   const stageIds = new Set(normalizedStages.map((stage) => stage.id));
   if (stageIds.size !== normalizedStages.length) throw new Error('阶段 ID 重复');
+  if (normalizedStages.filter((stage) => stage.status === 'active').length !== 1) throw new Error('必须恰好有一个进行中的阶段');
+  if (normalizedStages.some((stage) => stage.status === 'active' ? stage.endedAt !== null : !stage.endedAt || Date.parse(stage.endedAt) < Date.parse(stage.createdAt))) throw new Error('阶段日期与状态不一致');
 
   const normalizedDimensions = dimensions.map((dimension) => ({
     id: requireString(dimension?.id, '方向 ID'),
     stageId: requireString(dimension?.stageId, '方向阶段 ID'),
     name: requireString(dimension?.name, '方向名称'),
-    icon: requireString(dimension?.icon, '方向图标', 50),
+    icon: ICONS.has(dimension?.icon) ? dimension.icon : (() => { throw new Error('方向图标无效'); })(),
     sortOrder: Number.isInteger(dimension?.sortOrder) && dimension.sortOrder >= 0 ? dimension.sortOrder : (() => { throw new Error('方向顺序无效'); })(),
-    isEnabled: Boolean(dimension?.isEnabled)
+    isEnabled: typeof dimension?.isEnabled === 'boolean' ? dimension.isEnabled : (() => { throw new Error('方向启用状态无效'); })()
   }));
   const dimensionIds = new Set(normalizedDimensions.map((dimension) => dimension.id));
   if (dimensionIds.size !== normalizedDimensions.length) throw new Error('方向 ID 重复');
@@ -79,6 +82,8 @@ export function normalizeSnapshot(snapshot) {
     throw new Error('记录关联了不存在的阶段或方向');
   }
 
+  const dimensionStages = new Map(normalizedDimensions.map((dimension) => [dimension.id, dimension.stageId]));
+  if (normalizedRecords.some((record) => dimensionStages.get(record.dimensionId) !== record.stageId)) throw new Error('记录与方向的阶段不一致');
   return { stages: normalizedStages, dimensions: normalizedDimensions, records: normalizedRecords };
 }
 
@@ -102,16 +107,19 @@ export async function encryptBackup(snapshot, password) {
   const plaintext = encoder.encode(JSON.stringify(normalized));
   const encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, plaintext);
 
-  return JSON.stringify({
+  const serialized = JSON.stringify({
     format: FORMAT,
     version: VERSION,
     kdf: { name: 'PBKDF2', hash: 'SHA-256', iterations: ITERATIONS, salt: bytesToBase64(salt) },
     cipher: { name: 'AES-GCM', iv: bytesToBase64(iv) },
     data: bytesToBase64(new Uint8Array(encrypted))
   });
+  if (serialized.length > 5_000_000) throw new Error('备份超过当前 5 MB 恢复上限，未生成不可恢复的文件');
+  return serialized;
 }
 
 export async function decryptBackup(serialized, password) {
+  if (typeof serialized === 'string' && serialized.length > 5_000_000) throw new Error('备份文件超过 5 MB');
   let envelope;
   try {
     envelope = typeof serialized === 'string' ? JSON.parse(serialized) : serialized;

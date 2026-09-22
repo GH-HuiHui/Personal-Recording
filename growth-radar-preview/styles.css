@@ -132,6 +132,7 @@ h1 { font-size: clamp(38px, 10vw, 46px); line-height: 1.08; letter-spacing: -.04
   background: var(--accent); color: #fff; font-size: 14px; font-weight: 650; text-align: center;
 }
 .secondary-backup { background: rgba(0,122,255,.1); color: var(--accent); }
+.save-backup { margin-top: 10px; text-decoration: none; }
 .backup-status { margin-top: 12px; color: var(--secondary); font-size: 12px; line-height: 1.5; }
 .backup-status.is-error { color: var(--danger); }
 .storage-error, .empty-state {
@@ -200,3 +201,14 @@ h1 { font-size: clamp(38px, 10vw, 46px); line-height: 1.08; letter-spacing: -.04
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .001ms !important; transition-duration: .001ms !important; }
 }
+.management-dialog { width: min(360px, calc(100vw - 32px)); max-height: 80dvh; overflow: auto; box-sizing: border-box; border: 0; border-radius: 24px; padding: 24px; color: #1c1c1e; background: #f2f2f7; }
+.management-dialog::backdrop { background: rgb(0 0 0 / 35%); backdrop-filter: blur(5px); }
+.management-dialog h2 { font-size: 22px; margin: 0 0 20px; }
+.management-dialog p { font-size: 14px; line-height: 1.6; }
+.management-dialog input:not([type=checkbox]) { display: block; box-sizing: border-box; width: 100%; background: white; border: 1px solid #d1d1d6; border-radius: 10px; padding: 12px; margin-top: 8px; font: inherit; font-size: 16px; }
+.management-dialog button { min-height: 44px; color: #007aff; font: inherit; border: 0; background: transparent; }
+.manage-row { display: block; width: 100%; text-align: left; border-bottom: 1px solid #ddd !important; }
+.check-row { display: flex; gap: 12px; align-items: center; min-height: 44px; }
+.check-row input { width: 20px; height: 20px; }
+.dialog-actions { display: flex; justify-content: space-between; margin-top: 16px; }
+.dialog-error { color: #b42318; }

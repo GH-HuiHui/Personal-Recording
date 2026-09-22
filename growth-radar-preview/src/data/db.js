@@ -45,26 +45,29 @@ export function openGrowthRadarDb({ indexedDBImpl = globalThis.indexedDB, name =
 }
 
 export async function seedIfEmpty(db, now = new Date()) {
-  const read = db.transaction('stages', 'readonly');
-  const count = await requestResult(read.objectStore('stages').count());
-  await transactionDone(read);
-  if (count > 0) return false;
-
-  const { stage, dimensions } = createInitialData(now);
   const write = db.transaction(['stages', 'dimensions'], 'readwrite');
+  const done = transactionDone(write);
+  const count = await requestResult(write.objectStore('stages').count());
+  if (count > 0) { await done; return false; }
+  const { stage, dimensions } = createInitialData(now);
   write.objectStore('stages').add(stage);
   const dimensionStore = write.objectStore('dimensions');
   dimensions.forEach((dimension) => dimensionStore.add(dimension));
-  await transactionDone(write);
+  await done;
   return true;
 }
 
 export async function addRecord(db, dimensionId, now = new Date()) {
-  const transaction = db.transaction(['dimensions', 'records'], 'readwrite');
+  const transaction = db.transaction(['stages', 'dimensions', 'records'], 'readwrite');
   const dimension = await requestResult(transaction.objectStore('dimensions').get(dimensionId));
   if (!dimension || !dimension.isEnabled) {
     transaction.abort();
     throw new Error('成长方向不存在或已停用');
+  }
+  const stage = await requestResult(transaction.objectStore('stages').get(dimension.stageId));
+  if (stage?.status !== 'active') {
+    transaction.abort();
+    throw new Error('已归档阶段不能继续记录');
   }
   const record = {
     id: crypto.randomUUID(),

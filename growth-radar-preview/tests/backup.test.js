@@ -38,6 +38,13 @@ describe('加密备份', () => {
     expect(normalizeSnapshot({ ...snapshot, dimensions: [{ ...snapshot.dimensions[0], name: '<script>' }] }).dimensions[0].name).toBe('<script>');
   });
 
+  it('拒绝跨阶段记录、异常图标与重复活动阶段', () => {
+    expect(() => normalizeSnapshot({ ...snapshot, dimensions: [{ ...snapshot.dimensions[0], icon: '../private' }] })).toThrow('图标');
+    const stages = [...snapshot.stages, { ...snapshot.stages[0], id: 's2', status: 'archived', endedAt: '2026-09-22T00:00:00.000Z' }];
+    expect(() => normalizeSnapshot({ ...snapshot, stages, records: [{ ...snapshot.records[0], stageId: 's2' }] })).toThrow('不一致');
+    expect(() => normalizeSnapshot({ ...snapshot, stages: [...snapshot.stages, { ...snapshot.stages[0], id: 's2' }] })).toThrow('恰好');
+  });
+
   it('事务恢复失败会保留原数据库', async () => {
     const name = `backup-test-${crypto.randomUUID()}`;
     databases.push(name);

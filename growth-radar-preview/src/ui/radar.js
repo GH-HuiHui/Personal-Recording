@@ -20,7 +20,8 @@ export function createRadarMarkup(dimensions, mode) {
   const max = isRecent ? 7 : 1;
   const values = dimensions.map((dimension) => isRecent ? dimension.activeDays : dimension.stageRate);
   const angles = values.map((_, index) => -Math.PI / 2 + index * (2 * Math.PI / values.length));
-  const grids = [1, 0.75, 0.5, 0.25]
+  const levels = isRecent ? [1, 5 / 7, 3 / 7, 1 / 7] : [1, 0.75, 0.5, 0.25];
+  const grids = levels
     .map((level) => `<polygon class="grid" points="${polygonPoints(Array(values.length).fill(max * level), max)}"/>`)
     .join('');
   const axes = angles.map((angle) => {
@@ -29,7 +30,8 @@ export function createRadarMarkup(dimensions, mode) {
   }).join('');
   const labels = dimensions.map((dimension, index) => {
     const [x, y] = point(angles[index], 128);
-    const label = dimension.name.replace(' / 雅思', '');
+    const shortName = dimension.name.replace(' / 雅思', '');
+    const label = Array.from(shortName).length > 6 ? Array.from(shortName).slice(0, 5).join('') + '…' : shortName;
     return `<text class="radar-label" x="${x}" y="${y + 4}">${escapeHtml(label)}</text>`;
   }).join('');
   const points = values.map((value, index) => {
@@ -38,7 +40,7 @@ export function createRadarMarkup(dimensions, mode) {
   }).join('');
   const scaleLabels = isRecent ? ['7', '5', '3', '1'] : ['100', '75', '50', '25'];
   const scales = scaleLabels
-    .map((label, index) => `<text class="scale-label" x="185" y="${49 + index * 25.5}">${label}</text>`)
+    .map((label, index) => `<text class="scale-label" x="185" y="${CENTER.y - RADIUS * levels[index] + 3}">${label}</text>`)
     .join('');
 
   return `${grids}${axes}${scales}<polygon class="radar-shape" points="${polygonPoints(values, max)}"/>${points}${labels}`;

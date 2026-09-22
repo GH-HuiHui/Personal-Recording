@@ -13,7 +13,7 @@ export function renderHistory(container, snapshot) {
   container.innerHTML = stages.map((stage) => {
     const active = stage.status === 'active';
     const range = `${formatDate(stage.createdAt)} ～ ${active ? '至今' : formatDate(stage.endedAt)}`;
-    return `<button class="stage-row" type="button">
+    return `<button class="stage-row" data-stage-id="${escapeHtml(stage.id)}" type="button">
       <span class="stage-dot${active ? '' : ' muted-dot'}"></span>
       <span class="stage-copy"><strong>${escapeHtml(stage.name)}</strong><small>${escapeHtml(range)}</small></span>
       ${active ? '<span class="stage-status">进行中</span>' : ''}

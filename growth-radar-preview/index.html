@@ -67,7 +67,7 @@
         <p class="group-label">当前阶段</p>
         <div id="settings-current" class="settings-group grouped-list"></div>
         <p class="group-label">阶段管理</p>
-        <div class="settings-group grouped-list"><button class="setting-row danger"><span>结束本阶段</span><img class="chevron" src="assets/icons/chevron-right.svg" alt=""></button></div>
+        <div class="settings-group grouped-list"><button id="archive-stage" class="setting-row danger" type="button"><span>结束本阶段</span><img class="chevron" src="assets/icons/chevron-right.svg" alt=""></button></div>
         <p class="settings-footnote">归档后，历史方向与记录保持只读，不受新阶段修改影响。</p>
         <p class="group-label install-label">安装到 iPhone</p>
         <div class="install-card grouped-list"><p>在 Safari 点“分享”，选择“添加到主屏幕”。安装后可全屏打开，离线记录。</p></div>
@@ -78,6 +78,7 @@
             <button id="export-backup" class="backup-button" type="button">导出加密备份</button>
             <label class="backup-button secondary-backup">导入备份<input id="import-backup" type="file" accept="application/json,.growthradar" hidden></label>
           </div>
+          <a id="save-backup" class="backup-button save-backup" href="#" download hidden>保存备份文件</a>
           <p id="backup-status" class="backup-status" role="status" aria-live="polite">密码不会保存或上传。忘记密码将无法恢复备份。</p>
         </div>
       </section>

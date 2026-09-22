@@ -8,6 +8,7 @@ import { renderHistory } from './ui/history.js';
 import { renderRadar } from './ui/radar.js';
 import { renderSettings } from './ui/settings.js';
 import { renderToday } from './ui/today.js';
+import { setupManagement } from './ui/management.js';
 
 const framework = new Framework7({
   el: '#growth-radar-app',
@@ -36,6 +37,7 @@ let mode = 'recent';
 let lastRecord = null;
 let recordedId = null;
 let undoTimer = null;
+let backupObjectUrl = null;
 
 function activeStage() {
   return snapshot.stages.find((stage) => stage.status === 'active');
@@ -56,7 +58,7 @@ function showToast(message, canUndo = false) {
 }
 
 function render() {
-  stats = calculateDimensionStats(snapshot);
+  stats = calculateDimensionStats({ ...snapshot, dimensions: snapshot.dimensions.filter((item) => item.stageId === activeStage()?.id) });
   elements.stageMeta.textContent = formatStageMeta(activeStage());
   elements.radarTitle.textContent = mode === 'recent' ? '近 7 日持续性' : '本阶段活跃率';
   elements.radarDescription.textContent = mode === 'recent' ? '按活跃天数统计' : '活跃天数占比';
@@ -133,14 +135,14 @@ async function exportEncryptedBackup() {
   try {
     const password = readBackupPassword();
     const encrypted = await encryptBackup(snapshot, password);
-    const url = URL.createObjectURL(new Blob([encrypted], { type: 'application/json' }));
-    const link = document.createElement('a');
-    link.href = url;
+    if (backupObjectUrl) URL.revokeObjectURL(backupObjectUrl);
+    backupObjectUrl = URL.createObjectURL(new Blob([encrypted], { type: 'application/json' }));
+    const link = document.querySelector('#save-backup');
+    link.href = backupObjectUrl;
     link.download = `成长雷达备份-${new Date().toISOString().slice(0, 10)}.growthradar`;
-    link.click();
-    URL.revokeObjectURL(url);
+    link.hidden = false;
     document.querySelector('#backup-password').value = '';
-    setBackupStatus('加密备份已生成，请将文件保存在安全位置。');
+    setBackupStatus('加密完成。请点击“保存备份文件”，并将文件放在安全位置。');
   } catch (error) {
     setBackupStatus(error.message || '导出失败', true);
   }
@@ -161,6 +163,7 @@ async function importEncryptedBackup(file) {
       return;
     }
     await replaceDatabase(database, restored);
+    lastRecord = null;
     document.querySelector('#backup-password').value = '';
     await refresh();
     setBackupStatus('备份已安全恢复。');
@@ -176,6 +179,7 @@ async function initialize() {
     database = await openGrowthRadarDb();
     await seedIfEmpty(database);
     await refresh();
+    setupManagement({ getDb: () => database, getSnapshot: () => snapshot, refresh: async () => { lastRecord = null; await refresh(); }, notify: showToast });
   } catch {
     document.querySelector('#storage-error').hidden = false;
     document.querySelector('#today-content').hidden = true;
@@ -187,6 +191,7 @@ async function registerServiceWorker() {
   try {
     const url = new URL('service-worker.js', document.baseURI);
     await navigator.serviceWorker.register(url, { scope: './' });
+    await navigator.serviceWorker.ready;
   } catch {
     console.warn('PWA_SW_REGISTRATION_FAILED');
   }
@@ -195,7 +200,6 @@ async function registerServiceWorker() {
 document.querySelectorAll('.metric-button').forEach((button) => button.addEventListener('click', () => setMode(button.dataset.mode)));
 document.querySelectorAll('.tab-button').forEach((button) => button.addEventListener('click', () => setTab(button.dataset.tab)));
 document.querySelector('#undo-button').addEventListener('click', undoLastAction);
-document.querySelector('#add-dimension-button').addEventListener('click', () => showToast('方向管理将在下一阶段开放'));
 document.querySelector('#export-backup').addEventListener('click', exportEncryptedBackup);
 document.querySelector('#import-backup').addEventListener('change', (event) => importEncryptedBackup(event.target.files?.[0]));
 
