@@ -1,8 +1,8 @@
 # GrowthRadar iPhone Design QA
 
-- Source visual truth: `C:\Users\star\AppData\Local\Temp\codex-clipboard-4f58826e-90cf-4743-8445-0aa2f1ec5da1.png`
-- Implementation screenshot: `F:\2026\Project\Personnal_recoding\growth-radar-preview\implementation-mobile-393x852.jpg`
-- Combined comparison: `F:\2026\Project\Personnal_recoding\growth-radar-preview\design-comparison.png`
+- Source visual truth: user-provided reference screenshot from the original design review (not included in the repository).
+- Implementation screenshot: `implementation-mobile-393x852.jpg`
+- Combined comparison: `design-comparison.png`
 - Viewport: 393 × 852 CSS px, device scale factor 1
 - Source pixels: 853 × 1844; normalized to 393 × 852 for comparison
 - Implementation pixels: 393 × 852
@@ -59,3 +59,10 @@ Local acceptance passed within these boundaries; deployment and device acceptanc
 - 最新图形插值由单元测试验证端点及方向数量变化；全套 22 项测试通过，生产构建通过，npm audit 为 0 个已知漏洞。
 - 深色语义色和减少动态效果已实现；当前浏览器控制通道未提供媒体偏好模拟，未声称完成深色视觉及系统减少动态效果的端到端验收。
 - 仍需真机检查 Safari 软键盘、安全区、主屏幕安装和备份文件保存。不改变本地明文存储的安全限制。
+
+## 2026-09-23 发布前复核
+
+- 生产预览在独立的 `127.0.0.1:4188` 源正常打开，首页显示阶段、六个方向、雷达图和三栏导航；点击“记录一次阅读”后，今日次数从 0 增至 1，图表文字统计同步更新。浏览器错误与警告日志为空。
+- 自动测试 25 项通过；生产构建通过；`npm audit --audit-level=high` 显示 0 个已知漏洞；`git diff --check` 通过。
+- 深色模式和减少动态效果的样式及运行时分支已静态核对。当前浏览器控制通道无法模拟媒体偏好，因此本轮仍不能宣称这两项视觉验收通过。
+- iPhone Safari 安全区、软键盘、主屏幕安装和备份文件操作仍须在真机上验收。
