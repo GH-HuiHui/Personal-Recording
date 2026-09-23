@@ -2,7 +2,7 @@
   "id": "./",
   "name": "成长雷达",
   "short_name": "成长雷达",
-  "description": "仅在本机保存数据的个人成长行动记录工具",
+  "description": "成长行动记录工具",
   "lang": "zh-CN",
   "start_url": "./",
   "scope": "./",
