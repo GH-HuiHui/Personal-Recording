@@ -2,6 +2,8 @@
 
 一个只把数据留在你 iPhone 上的个人成长记录 PWA。网页外壳公开托管在 GitHub Pages，阶段、方向与行动记录全部保存在设备本地的 IndexedDB 中，不经过账号、服务器或分析服务。
 
+线上地址：[打开成长雷达](https://gh-huihui.github.io/Personal-Recording/)。仓库只保存应用代码、设计文档和测试样例；你的真实记录、导出的 CSV 与加密备份不应提交到仓库。
+
 ## 它做什么
 
 - 三 Tab 结构：今天 / 历史 / 设置。
@@ -86,7 +88,7 @@ Service Worker 在开发环境不注册，只在生产构建中生效。
 - 同一个 GitHub Pages 域名下不同仓库共享源，应使用独立可信域名或不承载其他不可信页面的专用 Pages 账号。不要在此应用保存密码、证件或其他高敏感数据。
 - 静态应用没有业务后端或关键 API，不能凭空提供服务端鉴权；CSP 是纵深防护，不是抵御发布账户被接管的保证。
 - GitHub 托管方仍可看到静态资源请求的 IP 等访问元数据。请保护发布账户，启用通行密钥或双因素认证，审查部署改动。
-- 当前尚未连接远程仓库、尚未上线；本地测试通过不能替代真实 iPhone 验收或专业安全审计。
+- GitHub Pages 已上线；线上可访问不等于真实 iPhone 验收或专业安全审计。
 
 Framework7 9（iOS 主题）· Vite 7 · 原生 IndexedDB · Web Crypto（PBKDF2-SHA-256 + AES-GCM 256）· Service Worker · Vitest。
 

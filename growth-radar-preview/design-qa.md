@@ -66,3 +66,9 @@ Local acceptance passed within these boundaries; deployment and device acceptanc
 - 自动测试 25 项通过；生产构建通过；`npm audit --audit-level=high` 显示 0 个已知漏洞；`git diff --check` 通过。
 - 深色模式和减少动态效果的样式及运行时分支已静态核对。当前浏览器控制通道无法模拟媒体偏好，因此本轮仍不能宣称这两项视觉验收通过。
 - iPhone Safari 安全区、软键盘、主屏幕安装和备份文件操作仍须在真机上验收。
+
+## 2026-09-23 GitHub Pages 上线
+
+- 仓库 `GH-HuiHui/Personal-Recording` 设为公开并启用 GitHub Actions Pages；发布运行 `35811716817` 的 build 和 deploy 均成功。
+- `https://gh-huihui.github.io/Personal-Recording/` 返回 HTTP 200；应用内浏览器显示“今天”、阶段说明、雷达图、六个初始方向和底部导航，证明静态资源与初始化脚本能在线加载。
+- 此次线上检查未写入实际用户数据。记录仍由浏览器本地 IndexedDB 保存；仓库没有真实行动记录或备份文件。真机验收限制仍如上所述。
