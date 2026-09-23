@@ -4,3 +4,5 @@ coverage/
 *.log
 *.growthradar
 exports/
+成长雷达数据-*.csv
+成长雷达趋势-*.png

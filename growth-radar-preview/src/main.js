@@ -15,6 +15,7 @@ import { renderHistory } from './ui/history.js';
 import { renderRadar } from './ui/radar.js';
 import { renderSettings } from './ui/settings.js';
 import { renderToday, todaySummary } from './ui/today.js';
+import { setupTrendControls } from './ui/trends.js';
 import { setupManagement } from './ui/management.js';
 import { createFeedback, confirmRestore } from './ui/feedback.js';
 
@@ -31,6 +32,7 @@ const elements = {
   app: document.querySelector('#app'),
   dimensionList: document.querySelector('#dimension-list'),
   historyList: document.querySelector('#history-list'),
+  trendContent: document.querySelector('#trend-content'),
   settingsCurrent: document.querySelector('#settings-current'),
   radar: document.querySelector('#radar-svg'),
   radarTitle: document.querySelector('#radar-title'),
@@ -45,6 +47,7 @@ let mode = 'recent';
 let lastRecord = null;
 let recordedId = null;
 let backupObjectUrl = null;
+let trendControls = null;
 
 function activeStage() {
   return snapshot.stages.find((stage) => stage.status === 'active');
@@ -69,6 +72,7 @@ function render() {
   renderRadar(elements.radar, stats, mode);
   renderToday(elements.dimensionList, stats, { recordedId, onRecord: recordAction });
   renderHistory(elements.historyList, snapshot);
+  trendControls?.render();
   renderSettings(elements.settingsCurrent, snapshot);
   recordedId = null;
 }
@@ -183,6 +187,8 @@ async function initialize() {
     database = await openGrowthRadarDb();
     await seedIfEmpty(database);
     await refresh();
+    trendControls = setupTrendControls({ container: elements.trendContent, getSnapshot: () => snapshot, notify: showToast });
+    trendControls.render();
     setupManagement({ framework, getDb: () => database, getSnapshot: () => snapshot, refresh: async () => { lastRecord = null; await refresh(); }, notify: showToast, dismissFeedback: feedback.dismiss });
   } catch {
     document.querySelector('#storage-error').hidden = false;
