@@ -1,3 +1,5 @@
+import { normalizeChartPreferences } from '../domain/chart-preferences.js';
+
 const FORMAT = 'growth-radar-backup';
 const VERSION = 1;
 const ITERATIONS = 600_000;
@@ -51,7 +53,8 @@ export function normalizeSnapshot(snapshot) {
     name: requireString(stage?.name, '阶段名称'),
     createdAt: requireIsoDate(stage?.createdAt, '阶段开始日期'),
     endedAt: requireIsoDate(stage?.endedAt, '阶段结束日期', true),
-    status: stage?.status === 'active' || stage?.status === 'archived' ? stage.status : (() => { throw new Error('阶段状态无效'); })()
+    status: stage?.status === 'active' || stage?.status === 'archived' ? stage.status : (() => { throw new Error('阶段状态无效'); })(),
+    ...(stage?.chartPreferences === undefined ? {} : { chartPreferences: normalizeChartPreferences(stage.chartPreferences) })
   }));
   const stageIds = new Set(normalizedStages.map((stage) => stage.id));
   if (stageIds.size !== normalizedStages.length) throw new Error('阶段 ID 重复');

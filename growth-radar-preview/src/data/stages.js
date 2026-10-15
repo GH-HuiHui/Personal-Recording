@@ -1,3 +1,5 @@
+import { normalizeChartPreferences } from '../domain/chart-preferences.js';
+
 const ICONS = new Set(['book-2', 'language', 'code', 'barbell', 'pencil', 'microphone-2']);
 const nameOf = (value) => {
   if (typeof value !== 'string' || !value.trim() || value.trim().length > 24) throw new Error('名称需要 1～24 个字符');
@@ -37,16 +39,32 @@ export function addDimension(db, name, icon = 'book-2') {
   });
 }
 
-export function editDimension(db, id, name, enabled) {
+export function editDimension(db, id, name, enabled, icon) {
   const clean = nameOf(name);
+  if (icon !== undefined && !ICONS.has(icon)) throw new Error('图标无效');
   return change(db, (tx, _stage, dimensions) => {
     const item = dimensions.find((dimension) => dimension.id === id);
     if (!item) throw new Error('方向不存在');
     const count = dimensions.filter((dimension) => dimension.id !== id && dimension.isEnabled).length + Number(enabled);
     if (count < 3 || count > 8) throw new Error('请保留 3～8 个显示方向');
     // Disable rather than delete: original action facts remain in the database.
-    tx.objectStore('dimensions').put({ ...item, name: clean, isEnabled: enabled });
+    tx.objectStore('dimensions').put({ ...item, name: clean, isEnabled: enabled, icon: icon ?? item.icon });
   });
+}
+
+export function reorderDimensions(db, ids) {
+  return change(db, (tx, _stage, dimensions) => {
+    if (!Array.isArray(ids) || ids.length !== dimensions.length || new Set(ids).size !== ids.length || dimensions.some((item) => !ids.includes(item.id))) {
+      throw new Error('方向顺序无效，请刷新后重试');
+    }
+    const byId = new Map(dimensions.map((item) => [item.id, item]));
+    ids.forEach((id, sortOrder) => tx.objectStore('dimensions').put({ ...byId.get(id), sortOrder }));
+  });
+}
+
+export function saveChartPreferences(db, preferences) {
+  const chartPreferences = normalizeChartPreferences(preferences);
+  return change(db, (tx, stage) => tx.objectStore('stages').put({ ...stage, chartPreferences }));
 }
 
 export function archiveAndCreateStage(db, name, selectedIds, now = new Date()) {
@@ -57,7 +75,7 @@ export function archiveAndCreateStage(db, name, selectedIds, now = new Date()) {
     const createdAt = now.toISOString();
     const id = crypto.randomUUID();
     tx.objectStore('stages').put({ ...stage, status: 'archived', endedAt: createdAt });
-    tx.objectStore('stages').add({ id, name: clean, createdAt, endedAt: null, status: 'active' });
+    tx.objectStore('stages').add({ id, name: clean, createdAt, endedAt: null, status: 'active', ...(stage.chartPreferences ? { chartPreferences: stage.chartPreferences } : {}) });
     selected.forEach((item, sortOrder) => tx.objectStore('dimensions').add({ ...item, id: crypto.randomUUID(), stageId: id, sortOrder, isEnabled: true }));
   });
 }

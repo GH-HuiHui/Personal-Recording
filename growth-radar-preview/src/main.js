@@ -12,7 +12,8 @@ import { decryptBackup, encryptBackup } from './data/backup.js';
 import { addRecord, deleteRecord, loadSnapshot, openGrowthRadarDb, replaceDatabase, seedIfEmpty } from './data/db.js';
 import { calculateDimensionStats } from './domain/analytics.js';
 import { renderHistory } from './ui/history.js';
-import { renderRadar } from './ui/radar.js';
+import { renderGrowthChart } from './ui/chart.js';
+import { saveFile } from './data/save-file.js';
 import { renderSettings } from './ui/settings.js';
 import { renderToday, todaySummary } from './ui/today.js';
 import { setupTrendControls } from './ui/trends.js';
@@ -46,7 +47,7 @@ let stats = [];
 let mode = 'recent';
 let lastRecord = null;
 let recordedId = null;
-let backupObjectUrl = null;
+let backupFile = null;
 let trendControls = null;
 
 function activeStage() {
@@ -69,7 +70,7 @@ function render() {
   document.querySelector('#today-summary').textContent = todaySummary(stats);
   elements.radarTitle.textContent = mode === 'recent' ? '活跃天数 · 0–7 天' : '阶段活跃率 · 0–100%';
   elements.radarDescription.textContent = stats.some((item) => item.stageCount > 0) ? '每一次投入，都有迹可循' : '从今天的一次记录开始';
-  renderRadar(elements.radar, stats, mode);
+  renderGrowthChart(elements.radar, document.querySelector('#chart-bars'), stats, mode, activeStage()?.chartPreferences);
   renderToday(elements.dimensionList, stats, { recordedId, onRecord: recordAction });
   renderHistory(elements.historyList, snapshot);
   trendControls?.render();
@@ -78,6 +79,12 @@ function render() {
 }
 
 async function refresh() {
+  if (backupFile) {
+    backupFile = null;
+    document.querySelector('#save-backup').hidden = true;
+    document.querySelector('#download-backup').hidden = true;
+    setBackupStatus('数据已更新，请重新导出最新备份。');
+  }
   snapshot = await loadSnapshot(database);
   render();
 }
@@ -140,20 +147,39 @@ function readBackupPassword() {
 }
 
 async function exportEncryptedBackup() {
+  const button = document.querySelector('#export-backup');
+  if (button.disabled) return;
+  button.disabled = true;
+  backupFile = null;
+  document.querySelector('#save-backup').hidden = true;
+  document.querySelector('#download-backup').hidden = true;
   try {
     const password = readBackupPassword();
-    const encrypted = await encryptBackup(snapshot, password);
-    if (backupObjectUrl) URL.revokeObjectURL(backupObjectUrl);
-    backupObjectUrl = URL.createObjectURL(new Blob([encrypted], { type: 'application/json' }));
-    const link = document.querySelector('#save-backup');
-    link.href = backupObjectUrl;
-    link.download = `成长雷达备份-${new Date().toISOString().slice(0, 10)}.growthradar`;
-    link.hidden = false;
+    setBackupStatus('正在加密备份…');
+    const encrypted = await encryptBackup(await loadSnapshot(database), password);
+    const now = new Date();
+    const date = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    backupFile = new File([encrypted], `成长雷达备份-${date}.growthradar`, { type: 'application/octet-stream' });
+    document.querySelector('#save-backup').hidden = false;
+    document.querySelector('#download-backup').hidden = false;
     document.querySelector('#backup-password').value = '';
-    setBackupStatus('加密完成。请点击“保存备份文件”，并将文件放在安全位置。');
+    setBackupStatus('加密完成。点击“保存 / 分享备份文件”；iPhone 请在分享面板选择“存储到文件”。也可使用“直接下载备份”。');
   } catch (error) {
     setBackupStatus(error.message || '导出失败', true);
-  }
+  } finally { button.disabled = false; }
+}
+
+async function savePreparedBackup(event) {
+  if (!backupFile) return;
+  const button = event.currentTarget;
+  if (button.disabled) return;
+  button.disabled = true;
+  try {
+    const result = await saveFile(backupFile, { directDownload: button.id === 'download-backup' });
+    setBackupStatus(result === 'saved' ? '备份文件已保存。' : result === 'shared' ? '分享操作已结束，请确认文件已存储。可再次点击保存。' : '已请求下载，请查看浏览器下载列表；iPhone 也可使用“保存 / 分享备份文件”。');
+  } catch (error) {
+    setBackupStatus(error.name === 'AbortError' ? '已取消保存，可再次点击保存。' : '保存失败，请使用“直接下载备份”重试。', error.name !== 'AbortError');
+  } finally { button.disabled = false; }
 }
 
 async function importEncryptedBackup(file) {
@@ -209,6 +235,8 @@ async function registerServiceWorker() {
 
 document.querySelectorAll('.metric-button').forEach((button) => button.addEventListener('click', () => setMode(button.dataset.mode)));
 document.querySelectorAll('.tab-button').forEach((button) => button.addEventListener('click', () => setTab(button.dataset.tab)));
+document.querySelector('#save-backup').addEventListener('click', savePreparedBackup);
+document.querySelector('#download-backup').addEventListener('click', savePreparedBackup);
 document.querySelector('#export-backup').addEventListener('click', exportEncryptedBackup);
 document.querySelector('#import-backup').addEventListener('change', (event) => importEncryptedBackup(event.target.files?.[0]));
 

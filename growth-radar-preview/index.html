@@ -3,12 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'none'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'none'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'">
   <meta name="theme-color" content="#f5f5f7">
   <meta name="referrer" content="no-referrer">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="成长雷达">
+  <link rel="icon" href="icons/icon-192.png">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
   <title>成长雷达</title>
@@ -38,6 +39,7 @@
             <p id="radar-description">按活跃天数统计</p>
           </div>
           <svg id="radar-svg" viewBox="0 0 360 280" role="img" aria-label="六个成长方向的活跃度雷达图"></svg>
+          <div id="chart-bars" hidden></div>
         </section>
 
         <section class="direction-section" aria-labelledby="directions-title">
@@ -79,7 +81,8 @@
             <button id="export-backup" class="backup-button" type="button">导出加密备份</button>
             <label class="backup-button secondary-backup">导入备份<input id="import-backup" type="file" accept="application/json,.growthradar" hidden></label>
           </div>
-          <a id="save-backup" class="backup-button save-backup" href="#" download hidden>保存备份文件</a>
+          <button id="save-backup" class="backup-button save-backup" type="button" hidden>保存 / 分享备份文件</button>
+          <button id="download-backup" class="backup-button secondary-backup save-backup" type="button" hidden>直接下载备份</button>
           <p id="backup-status" class="backup-status" role="status" aria-live="polite">密码不会保存或上传。忘记密码将无法恢复备份。</p>
         </div>
       </section>

@@ -15,7 +15,7 @@ function polygonPoints(values, max) {
   }).join(' ');
 }
 
-export function createRadarMarkup(dimensions, mode) {
+export function createRadarMarkup(dimensions, mode, { showValues = true } = {}) {
   if (dimensions.length < 3) return '';
   const isRecent = mode === 'recent';
   const max = isRecent ? 7 : 1;
@@ -33,7 +33,7 @@ export function createRadarMarkup(dimensions, mode) {
     const [x, y] = point(angles[index], 128);
     const shortName = dimension.name.replace(' / 雅思', '');
     const label = Array.from(shortName).length > 6 ? Array.from(shortName).slice(0, 5).join('') + '…' : shortName;
-    return `<text class="radar-label" x="${x}" y="${y + 4}">${escapeHtml(label)}</text>`;
+    return `<text class="radar-label" x="${x}" y="${y + 4}">${escapeHtml(label)}${showValues ? `<tspan x="${x}" dy="15">${isRecent ? `${dimension.activeDays} 天` : `${Math.round(dimension.stageRate * 100)}%`}</tspan>` : ''}</text>`;
   }).join('');
   const points = values.map((value, index) => {
     const [x, y] = point(angles[index], RADIUS * value / max);
@@ -44,9 +44,9 @@ export function createRadarMarkup(dimensions, mode) {
   return `<title>${range}</title><desc>${description}</desc>${grids}${axes}<polygon class="radar-shape" points="${polygonPoints(values, max)}"/>${points}${labels}`;
 }
 
-export function renderRadar(svg, dimensions, mode) {
+export function renderRadar(svg, dimensions, mode, preferences) {
   const previous = svg.querySelector('.radar-shape')?.getAttribute('points');
-  svg.innerHTML = createRadarMarkup(dimensions, mode);
+  svg.innerHTML = createRadarMarkup(dimensions, mode, preferences);
   animateRadar(svg, previous);
   svg.setAttribute('aria-label', mode === 'recent' ? '最近七日成长方向活跃天数雷达图' : '本阶段成长方向活跃率雷达图');
 }

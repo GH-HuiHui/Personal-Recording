@@ -10,7 +10,7 @@ function dayKey(value) {
   return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
 }
 
-function elapsedCalendarDays(from, to) {
+export function elapsedCalendarDays(from, to) {
   const fromDay = startOfLocalDay(from);
   const toDay = startOfLocalDay(to);
   const utcFrom = Date.UTC(fromDay.getFullYear(), fromDay.getMonth(), fromDay.getDate());

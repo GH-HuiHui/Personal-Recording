@@ -77,3 +77,41 @@ h1 { font-size: 34px; line-height: 1.2; letter-spacing: 0; font-weight: 700; }
 }
 @media (max-width: 350px) { #app { padding-left: 16px; padding-right: 16px; } .dimension-row { gap: 8px; padding-left: 12px; } .dimension-stats { gap: 2px; font-size: 11px; } }
 @media (prefers-reduced-motion: reduce) { .health-sheet, .sheet-backdrop { transition-duration: 0ms !important; } }
+
+/* Direction ordering, chart preferences and stage review. */
+[hidden] { display: none !important; }
+:root { --secondary: #64646b; }
+.management-dialog select { display: block; width: 100%; min-height: 48px; padding: 10px 12px; margin: 8px 0 16px; border: 1px solid var(--separator); border-radius: 10px; background: var(--surface); color: var(--label); font: inherit; font-size: 16px; }
+.manage-row { gap: 8px; }
+.manage-edit { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; text-align: left; padding: 8px 0; color: var(--label) !important; overflow-wrap: anywhere; }
+.manage-edit small { color: var(--secondary); font-size: 12px; margin-top: 3px; }
+.manage-order { display: flex; flex-shrink: 0; gap: 4px; }
+.manage-order button { width: 44px; min-height: 44px; border-radius: 10px; background: var(--surface); font-size: 21px; }
+.radar-shape { stroke: var(--chart-color, var(--accent)); fill: var(--chart-color, var(--accent)); fill-opacity: .12; }
+.radar-point { fill: var(--chart-color, var(--accent)); }
+.radar-label tspan { font-size: 11px; fill: var(--label); }
+.chart-bars { list-style: none; padding: 0; margin: 8px 6px; }
+.chart-bars li { margin-bottom: 18px; }
+.bar-caption { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; font-size: 14px; }
+.bar-caption span { min-width: 0; overflow-wrap: anywhere; }
+.bar-caption strong { flex-shrink: 0; font-variant-numeric: tabular-nums; }
+.bar-track { height: 10px; margin-top: 8px; overflow: hidden; background: var(--separator); border-radius: 5px; }
+.bar-track span { display: block; height: 100%; background: var(--chart-color, var(--accent)); border-radius: inherit; }
+.stage-range { color: var(--secondary); font-size: 13px !important; }
+.stage-totals { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 16px 0; margin: 12px 0 20px; border-block: 1px solid var(--separator); }
+.stage-totals dt { font-size: 12px; color: var(--secondary); }
+.stage-totals dd { margin: 4px 0 0; font-size: 26px; line-height: 1.3; font-weight: 700; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.stage-totals small { margin-left: 3px; font-size: 12px; font-weight: 400; }
+.stage-detail h3 { font-size: 17px; margin: 20px 0 8px; }
+.stage-bars { margin: 18px 0 24px; }
+.bar-note { color: var(--secondary); font-size: 12px !important; margin-top: 5px; }
+.stage-empty { padding: 12px; background: var(--surface); border-radius: 10px; }
+.stage-table { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 13px; }
+.stage-table th, .stage-table td { padding: 10px 4px; border-bottom: 1px solid var(--separator); text-align: left; overflow-wrap: anywhere; }
+.stage-table th:first-child { width: 38%; }
+.stage-table th:last-child, .stage-table td:last-child { width: 16%; text-align: right; font-variant-numeric: tabular-nums; }
+.stage-detail [data-more-records] { width: 100%; margin-top: 10px; }
+.backup-button:disabled { opacity: .5; cursor: wait; }
+.save-backup { width: 100%; }
+
+@media (prefers-color-scheme: dark) { :root { --secondary: #a1a1a8; } }
