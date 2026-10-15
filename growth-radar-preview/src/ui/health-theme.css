@@ -85,8 +85,6 @@ h1 { font-size: 34px; line-height: 1.2; letter-spacing: 0; font-weight: 700; }
 .manage-row { gap: 8px; }
 .manage-edit { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; text-align: left; padding: 8px 0; color: var(--label) !important; overflow-wrap: anywhere; }
 .manage-edit small { color: var(--secondary); font-size: 12px; margin-top: 3px; }
-.manage-order { display: flex; flex-shrink: 0; gap: 4px; }
-.manage-order button { width: 44px; min-height: 44px; border-radius: 10px; background: var(--surface); font-size: 21px; }
 .radar-shape { stroke: var(--chart-color, var(--accent)); fill: var(--chart-color, var(--accent)); fill-opacity: .12; }
 .radar-point { fill: var(--chart-color, var(--accent)); }
 .radar-label tspan { font-size: 11px; fill: var(--label); }
@@ -115,3 +113,19 @@ h1 { font-size: 34px; line-height: 1.2; letter-spacing: 0; font-weight: 700; }
 .save-backup { width: 100%; }
 
 @media (prefers-color-scheme: dark) { :root { --secondary: #a1a1a8; } }
+
+/* A single drag or target-position choice moves a direction across the list. */
+.direction-sort-list { position: relative; }
+.sort-status { min-height: 20px; margin-bottom: 10px; color: var(--accent); font-size: 12px !important; }
+.sort-status:not(:empty) { margin-bottom: 10px; }
+.management-dialog .direction-position { flex: 0 0 76px; width: 76px; min-height: 44px; padding: 8px 2px 8px 6px; margin: 0; border: 0; font-size: 13px; color: var(--secondary); }
+.management-dialog .direction-sort-handle { display: grid; place-items: center; flex: 0 0 44px; width: 44px; height: 44px; padding: 0; border-radius: 8px; color: var(--secondary); cursor: grab; touch-action: none; -webkit-user-select: none; user-select: none; }
+.direction-sort-handle svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; }
+.direction-sort-list.is-sorting { -webkit-user-select: none; user-select: none; }
+.direction-sort-list .is-sort-placeholder { opacity: .22; background: var(--soft-blue); border-radius: 8px; }
+.health-sheet .direction-drag-ghost { position: absolute; z-index: 2; pointer-events: none; background: var(--surface); color: var(--label); border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,.18); will-change: transform; }
+.direction-drag-ghost .direction-sort-handle { cursor: grabbing; }
+.direction-drag-ghost select { flex: 0 0 76px; width: 76px; min-height: 44px; margin: 0; border: 0; background: transparent; color: var(--secondary); font-size: 13px; }
+.direction-drag-ghost button { background: transparent; border: 0; font: inherit; }
+.direction-drag-ghost .direction-sort-handle { flex: 0 0 44px; display: grid; place-items: center; }
+.direction-sort-list .is-position-moving { position: relative; z-index: 1; background: var(--surface); border-radius: 8px; }

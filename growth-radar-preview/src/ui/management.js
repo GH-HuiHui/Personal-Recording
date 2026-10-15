@@ -1,4 +1,5 @@
 import { addDimension, archiveAndCreateStage, editDimension, renameStage, reorderDimensions, saveChartPreferences } from '../data/stages.js';
+import { createSortableDirections, setupDirectionSort } from './direction-sort.js';
 import { DEFAULT_CHART } from '../domain/chart-preferences.js';
 import { createStageDetails, setupStagePagination } from './stage-details.js';
 import { escapeHtml as e } from './safe-html.js';
@@ -17,6 +18,7 @@ export function setupManagement({ framework, getDb, getSnapshot, refresh, notify
   let triggerSelector;
   let baseline;
   let saving = false;
+  let directionSort = null;
   let leave = () => close();
   const state = () => formState(new FormData(dialog.querySelector('form')), baseline);
   const background = [document.querySelector('#app'), document.querySelector('.tab-bar')];
@@ -31,9 +33,9 @@ export function setupManagement({ framework, getDb, getSnapshot, refresh, notify
       }
     }
   });
-  const close = () => sheet.close(!window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  const close = () => { directionSort?.destroy(); directionSort = null; sheet.close(!window.matchMedia('(prefers-reduced-motion: reduce)').matches); };
   function requestLeave(destination = close) {
-    if (saving) return;
+    if (saving || directionSort?.busy) return;
     if (!state().dirty) { destination(); return; }
     const guard = dialog.querySelector('.discard-guard');
     guard.hidden = false;
@@ -56,6 +58,8 @@ export function setupManagement({ framework, getDb, getSnapshot, refresh, notify
   const directions = () => getSnapshot().dimensions.filter((item) => item.stageId === active()?.id).toSorted((a,b) => a.sortOrder - b.sortOrder);
 
   function show(title, content, action, { back, requireChanges = false, saveLabel = '保存' } = {}) {
+    directionSort?.destroy();
+    directionSort = null;
     dismissFeedback?.();
     if (!sheet.opened) {
       trigger = document.activeElement;
@@ -105,28 +109,19 @@ export function setupManagement({ framework, getDb, getSnapshot, refresh, notify
   }
   function add() { show('添加方向', nameInput('') + iconInput('book-2'), (data) => addDimension(getDb(), data.get('name'), data.get('icon'))); }
   function manage() {
-    const items = directions();
-    show('方向管理', '<p class="sheet-hint" role="status">用上下按钮调整顺序，自动保存并同步首页与图表。轻点名称可修改图标或停用。</p>' + items.map((item, index) => `<div class="manage-row"><button class="manage-edit" type="button" data-edit="${e(item.id)}"><span>${e(item.name)}</span><small>${item.isEnabled ? '显示' : '已停用'}</small></button><div class="manage-order"><button type="button" data-move="${e(item.id)}" data-step="-1" aria-label="上移${e(item.name)}" ${index === 0 ? 'disabled' : ''}>↑</button><button type="button" data-move="${e(item.id)}" data-step="1" aria-label="下移${e(item.name)}" ${index === items.length - 1 ? 'disabled' : ''}>↓</button></div></div>`).join(''), null);
-    dialog.querySelectorAll('[data-move]').forEach((button) => button.onclick = async () => {
-      if (saving || button.disabled) return;
-      saving = true;
-      const ids = directions().map((item) => item.id);
-      const from = ids.indexOf(button.dataset.move);
-      const to = from + Number(button.dataset.step);
-      [ids[from], ids[to]] = [ids[to], ids[from]];
-      dialog.querySelectorAll('button').forEach((control) => { control.disabled = true; });
-      try {
-        await reorderDimensions(getDb(), ids);
-        await refresh();
-        saving = false;
-        manage();
-        const moved = [...dialog.querySelectorAll('[data-move]')].filter((control) => control.dataset.move === button.dataset.move);
-        (moved.find((control) => !control.disabled) || dialog.querySelector('[data-close]')).focus();
-        dialog.querySelector('[role=status]').textContent = '顺序已保存，首页与图表已同步。';
-      } catch (error) {
-        saving = false;
-        manage();
-        dialog.querySelector('.dialog-error').textContent = error.message;
+    show('方向管理', createSortableDirections(directions()), null);
+    directionSort = setupDirectionSort(dialog, {
+      save: async (ids) => {
+        saving = true;
+        const controls = [...dialog.querySelectorAll('button, select')];
+        controls.forEach((control) => { control.disabled = true; });
+        try { await reorderDimensions(getDb(), ids); await refresh(); }
+        finally { saving = false; controls.forEach((control) => { control.disabled = false; }); }
+      },
+      status: (message, error = false) => {
+        dialog.querySelector(error ? '.dialog-error' : '[data-sort-status]').textContent = message;
+        if (!error) dialog.querySelector('.dialog-error').textContent = '';
+        else dialog.querySelector('[data-sort-status]').textContent = '未保存，已恢复原顺序。';
       }
     });
     dialog.querySelectorAll('[data-edit]').forEach((button) => button.onclick = () => {
